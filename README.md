@@ -46,13 +46,14 @@ mount | grep aifs lists ckptfs on /mnt/aifs
 ```
 
 ## Test
+```bash
 dd if=/dev/zero of=/mnt/aifs/test.bin bs=1M count=100
-
+```
 ## check 
-
+```bash
 ls -lh /mnt/nvme/aifs-cache
 ls -lh /tmp/aifs-backend
-
+```
 
 ## mounting on the nvmedisk
 azureuser@ranga-ubuntu-vm:~$ lsblk
