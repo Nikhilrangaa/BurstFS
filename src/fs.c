@@ -148,28 +148,86 @@ static int ckptfs_write(const char *path, const char *buf, size_t size, off_t of
     return (int)res;
 }
 
-static int ckptfs_fsync(const char *path, int datasync, struct fuse_file_info *fi) {
+
+
+/*
+ * Flush local spool contents to stable local media, mark journal durable,
+ * and enqueue replication to backend.
+ *
+ * IMPORTANT:
+ * - This does NOT wait for backend replication to finish.
+ * - It only enqueues replication, matching your current fsync() behavior.
+ */
+static int ckptfs_flush_local_and_enqueue(const char *path, struct fuse_file_info *fi)
+{
     struct stat st;
-    int fd = (int)fi->fh;
-    (void)datasync;
+    int fd;
 
-    if (fsync(fd) != 0)
+    if (!fi)
+        return -EINVAL;
+
+    fd = (int)(uintptr_t)fi->fh;
+    if (fd < 0)
+        return -EBADF;
+
+    /* Flush local NVMe/spool file */
+    if (fsync(fd) != 0) {
+        perror("fsync(local spool) failed");
         return -errno;
-
-    if (fstat(fd, &st) == 0) {
-        journal_mark_local_durable(path, (size_t)st.st_size);
     }
 
-    if (replicator_enqueue(path) != 0)
+    /* Record local durability */
+    if (fstat(fd, &st) == 0) {
+        journal_mark_local_durable(path, (size_t)st.st_size);
+    } else {
+        perror("fstat failed");
+        return -errno;
+    }
+
+    /* Enqueue background replication to backend */
+    if (replicator_enqueue(path) != 0) {
+        fprintf(stderr, "replicator_enqueue failed for %s\n", path);
         return -EIO;
+    }
 
     return 0;
 }
 
+static int ckptfs_fsync(const char *path, int datasync, struct fuse_file_info *fi)
+{
+    (void)datasync;
+
+    fprintf(stderr, "FSYNC called for %s\n", path);
+    return ckptfs_flush_local_and_enqueue(path, fi);
+}
+
 static int ckptfs_release(const char *path, struct fuse_file_info *fi) {
-    (void)path;
-    close((int)fi->fh);
-    return 0;
+  
+    int rc = 0;
+    int fd;
+
+    if (!fi)
+        return -EINVAL;
+
+    fd = (int)(uintptr_t)fi->fh;
+
+    /*
+     * Only trigger flush/replication automatically for files opened
+     * with write access. This avoids unnecessary enqueue on read-only opens.
+     */
+    if ((fi->flags & O_ACCMODE) != O_RDONLY) {
+        fprintf(stderr, "RELEASE triggering flush for %s\n", path);
+        rc = ckptfs_flush_local_and_enqueue(path, fi);
+    }
+
+    if (fd >= 0) {
+        if (close(fd) != 0 && rc == 0)
+            rc = -errno;
+    }
+
+    fi->fh = 0;
+    return rc;
+
 }
 
 struct fuse_operations ckptfs_ops = {
