@@ -133,6 +133,8 @@ watch -n 0.2 'find /mnt/nvme/aifs-cache -type f -ls'   -> writing to NVMe
 
 
 ## Test shows local NVme at 879 MB/s and immediately showing up whereas the same file shows up in /tmp/aifs-backend after a noticeable (30 or 40 seconds later)
+## Skew is Standard L8as v3 (8 vcpus, 64 GiB memory)
+
 azureuser@ubuntu-vm:~/ai/ai$ sudo dd if=/dev/zero of=/mnt/aifs/test9.bin bs=1M count=4096 conv=fsync
 4096+0 records in
 4096+0 records out
