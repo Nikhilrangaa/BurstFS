@@ -56,6 +56,7 @@ ls -lh /tmp/aifs-backend
 ```
 
 ## mounting on the nvmedisk
+```bash
 azureuser@ranga-ubuntu-vm:~$ lsblk
 NAME         MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS
 loop0          7:0    0 49.3M  1 loop /snap/snapd/26865
@@ -124,7 +125,7 @@ azureuser@ranga-ubuntu-vm:~$
 ## to watch the file written to NVME and then to the backend persistent drive (/tmp/** or NFS share)
 watch -n 0.2 'find /tmp/aifs-backend -type f -ls'      -> writing to the backend (Tmp or NFS share)
 watch -n 0.2 'find /mnt/nvme/aifs-cache -type f -ls'   -> writing to NVMe
-
+```
 
 ## Notes
 - This is intended as a **starting point**, not a production filesystem.
