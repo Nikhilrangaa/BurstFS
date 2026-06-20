@@ -48,6 +48,8 @@ mount | grep aifs lists ckptfs on /mnt/aifs
 ## Test
 ```bash
 dd if=/dev/zero of=/mnt/aifs/test.bin bs=1M count=100
+
+sudo dd if=/dev/zero of=/mnt/nvme/test.bin bs=1M count=9000 conv=fsync   (this is actual write to the disk bypassing the cache)
 ```
 ## check 
 ```bash
@@ -128,6 +130,16 @@ azureuser@ranga-ubuntu-vm:~$
 ## to watch the file written to NVME and then to the backend persistent drive (/tmp/** or NFS share)
 watch -n 0.2 'find /tmp/aifs-backend -type f -ls'      -> writing to the backend (Tmp or NFS share)
 watch -n 0.2 'find /mnt/nvme/aifs-cache -type f -ls'   -> writing to NVMe
+
+
+## Test shows local NVme at 879 MB/s and immediately showing up whereas the same file shows up in /tmp/aifs-backend after a noticeable (30 or 40 seconds later)
+azureuser@ubuntu-vm:~/ai/ai$ sudo dd if=/dev/zero of=/mnt/aifs/test9.bin bs=1M count=4096 conv=fsync
+4096+0 records in
+4096+0 records out
+4294967296 bytes (4.3 GB, 4.0 GiB) copied, 4.8876 s, 879 MB/s
+azureuser@ubuntu-vm:~/ai/ai$
+
+
 ```
 
 ## Notes
