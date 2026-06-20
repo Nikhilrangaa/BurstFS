@@ -108,6 +108,9 @@ Writing inode tables: done
 Creating journal (131072 blocks): done
 Writing superblocks and filesystem accounting information: done
 
+## create a file system
+sudo mkfs.ext4 /dev/nvme0n1p1
+
 azureuser@ranga-ubuntu-vm:~$ sudo mkdir -p /mnt/nvme
 azureuser@ranga-ubuntu-vm:~$ sudo mount /dev/nvme1n1p1 /mnt/nvme
 azureuser@ranga-ubuntu-vm:~$ df -h
