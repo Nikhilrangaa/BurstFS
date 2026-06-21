@@ -1,128 +1,142 @@
+# AIFS Pricing Calculator
 
-https://aifs-calculator.vercel.app/
-''Unlocking GPU Efficiency: Introducing the AIFS Pricing Calculator
-AI and HPC workloads are increasingly constrained not by compute, but by data movement and checkpointing overhead. As model sizes grow and checkpoint frequencies increase, a significant portion of expensive GPU time is spent waiting on storage — especially during checkpoint writes.
-For many teams, this inefficiency is invisible. It shows up as longer training times, lower GPU utilization, and higher cloud bills — but without a clear way to quantify the root cause.
-That’s exactly why we built the AIFS Pricing Calculator.
+## Overview
 
-The Problem: Hidden GPU Idle Time
-Modern AI training workloads frequently checkpoint large model states — often in the range of tens of gigabytes — at regular intervals. These checkpoints are critical for:
+As AI and HPC workloads scale, checkpointing and storage I/O increasingly become bottlenecks that reduce GPU utilization and extend training time.  
 
-fault tolerance
-long-running training continuity
-experimentation and rollback
+The **AIFS Pricing Calculator** is designed to quantify the impact of checkpoint latency on GPU efficiency and estimate the economic value of accelerating checkpoint operations using AIFS (AI File System Accelerator).
 
-However, the process of writing checkpoints to backend storage can introduce significant latency. During this time:
+---
 
-GPUs sit idle
-training pipelines pause
-cluster utilization drops
+## Live Calculator
 
-Even in well-architected environments using high-performance storage, checkpointing can add hours of overhead to large training runs.
+👉 **Try the calculator here:**  
+https://aifs-calculator.vercel.app
 
-The Opportunity: AIFS Acceleration
-AIFS (AI File System Accelerator) changes the model by:
+---
 
-absorbing checkpoint writes at NVMe speed
-decoupling application-visible latency from backend storage
-asynchronously draining data to persistent storage
+## Why This Matters
 
-The result is simple but powerful:
+In modern training pipelines:
 
-Checkpoint operations complete faster from the application’s perspective, reducing GPU idle time and accelerating overall training completion.
+- Checkpoints can be tens of GiBs
+- Written every few minutes
+- Blocking application progress
 
+This leads to:
 
-Why a Pricing Calculator?
-While the performance improvement is compelling, every infrastructure decision ultimately comes down to one question:
+- GPU idle time during checkpoint writes  
+- Longer end-to-end training duration  
+- Higher infrastructure cost  
 
-What is the economic impact?
+AIFS addresses this by:
 
-The AIFS Pricing Calculator was designed to answer that question directly.
-It allows you to translate technical improvements into business outcomes:
+- Writing checkpoints at **NVMe speed**
+- Decoupling application latency from backend storage
+- Asynchronously draining data to persistent storage  
 
-How much GPU time are we wasting today?
-How much faster will training complete with AIFS?
-What are the monthly cost savings?
-What is a reasonable price point for this acceleration?
+---
 
+## What the Calculator Does
 
-What the Calculator Does
-The AIFS Pricing Calculator models your workload using a few simple inputs:
-Workload Inputs
+The AIFS Pricing Calculator converts infrastructure performance into **business value**.
 
-Checkpoint size (GiB)
-Checkpoint frequency (minutes)
-Training duration (hours)
-Number of nodes and GPUs
+### Inputs
 
-Storage Model
+- Checkpoint size (GiB)
+- Checkpoint interval (minutes)
+- Training duration (hours)
+- Number of nodes and GPUs
+- Baseline storage performance (disk / ANF / custom)
+- AIFS throughput and cache VM cost
 
-Baseline performance (disk or ANF)
-Backend storage tier and size
+---
 
-AIFS Configuration
+### Outputs
 
-Observed AIFS throughput
-Cache VM cost (e.g., L8as_v3)
+#### 1. Checkpoint Performance
+- Time per checkpoint (before vs after AIFS)
+- Percentage reduction in checkpoint latency
 
+#### 2. GPU Efficiency
+- Idle time reduction
+- GPU-hours saved per run
+- Monthly GPU-hours saved
 
-What You Get
-From these inputs, the calculator provides:
-1. Checkpoint Performance Improvement
+#### 3. Cost Impact
+- GPU cost savings
+- Storage right-sizing savings
+- Net monthly value
 
-Time per checkpoint (before vs after AIFS)
-Percentage reduction in checkpoint latency
+#### 4. Pricing Guidance
+- Suggested license based on value capture (10–20%)
+- Cost per node and per GPU
 
-2. GPU Efficiency Gains
+---
 
-GPU idle time reduction
-Hours saved per training run
-Monthly GPU-hours saved
+## Example Insight
 
-3. Cost Impact
+For checkpoint-heavy workloads, the calculator typically shows:
 
-GPU cost savings
-Storage right-sizing savings (e.g., reduced ANF footprint)
-Net monthly value
+- Significant reduction in checkpoint latency  
+- Improved GPU utilization  
+- Faster training completion times  
+- Measurable monthly cost savings  
 
-4. Pricing Guidance
+This allows teams to answer:
 
-Suggested software pricing based on value capture (10–20%)
-Cost per node and per GPU
+> *How much GPU time are we wasting today, and what is the value of fixing it?*
 
+---
 
-Why This Matters
-In GPU-heavy environments, even small inefficiencies are expensive.
-For example:
+## How to Use
 
-Saving just a few hours per training run on an 8×H100 node can translate into thousands of dollars per month
-Avoiding overprovisioning storage for throughput can reduce ongoing infrastructure costs
-Faster training completion can accelerate time-to-insight and iteration cycles
+1. Open the calculator link
+2. Enter:
+   - checkpoint size
+   - checkpoint frequency
+   - GPU node configuration
+   - storage assumptions
+3. Review:
+   - GPU savings
+   - time-to-train improvement
+   - recommended pricing range
 
-The AIFS Pricing Calculator makes these trade-offs visible, measurable, and actionable.
+---
 
-From Engineering Insight to Business Value
-The real value of AIFS is not just in faster I/O — it’s in aligning infrastructure performance with business outcomes:
+## Positioning
 
-Better GPU utilization
-Reduced training time
-Lower total cost of ownership
+The calculator is intended for:
 
-The calculator is the bridge between:
+- AI/ML infrastructure teams
+- HPC architects
+- Cloud cost optimization teams
+- Technical and field sales engineers
 
-“This is faster” → “This saves real money and time”
+It helps translate:
 
+> **Storage performance improvements → GPU efficiency → dollar impact**
 
-Try It Yourself
-With just a few inputs reflecting your workload, you can:
+---
 
-quantify your current inefficiencies
-estimate the impact of AIFS
-determine a fair and defensible pricing model
+## Summary
 
-Whether you’re an AI engineer, infrastructure architect, or business decision-maker, the AIFS Pricing Calculator gives you a clear, data-driven view of the opportunity.
+The AIFS Pricing Calculator bridges the gap between **technical performance** and **business outcomes**:
 
-Final Thought
-As AI workloads scale, storage performance becomes a first-class constraint. Solving it isn’t just a technical improvement — it’s a financial optimization problem.
-The AIFS Pricing Calculator helps you solve both at the same time.
-''
+- Makes GPU idle time visible  
+- Quantifies checkpoint overhead  
+- Estimates real economic savings  
+- Provides defensible pricing guidance  
+
+---
+
+## Future Enhancements
+
+Planned improvements include:
+
+- GPU SKU presets (H100, A100)
+- Deployment presets (L8as_v3, L48as_v3)
+- Executive summary output
+- Exportable ROI reports
+
+---
