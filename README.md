@@ -140,9 +140,11 @@ azureuser@ubuntu-vm:~/ai/ai$ sudo dd if=/dev/zero of=/mnt/aifs/test9.bin bs=1M c
 4096+0 records out
 4294967296 bytes (4.3 GB, 4.0 GiB) copied, 4.8876 s, 879 MB/s
 azureuser@ubuntu-vm:~/ai/ai$
-
-
 ```
+
+## Pricing calculator
+The **AIFS Pricing Calculator** is designed to quantify the impact of checkpoint latency on GPU efficiency and estimate the economic value of accelerating checkpoint operations using AIFS (AI File System Accelerator).
+https://aifs-calculator.vercel.app/
 
 ## Notes
 - This is intended as a **starting point**, not a production filesystem.
