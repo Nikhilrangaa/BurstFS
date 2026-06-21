@@ -141,6 +141,12 @@ azureuser@ubuntu-vm:~/ai/ai$ sudo dd if=/dev/zero of=/mnt/aifs/test9.bin bs=1M c
 4294967296 bytes (4.3 GB, 4.0 GiB) copied, 4.8876 s, 879 MB/s
 azureuser@ubuntu-vm:~/ai/ai$
 ```
+## Users usage model 
+aifs start <br>
+export CKPT_PATH=/mnt/aifs <br>
+run_training.sh <br>
+
+The aifs-setup.sh script should hide all the fdisk/mkfs/mount described above.
 
 ## Pricing calculator
 The **AIFS Pricing Calculator** is designed to quantify the impact of checkpoint latency on GPU efficiency and estimate the economic value of accelerating checkpoint operations using AIFS (AI File System Accelerator).<br>
