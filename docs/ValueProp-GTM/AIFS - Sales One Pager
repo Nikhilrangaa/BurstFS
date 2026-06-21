@@ -1,0 +1,105 @@
+# AIFS — Sales One Pager
+## Eliminate GPU Idle Time from Checkpointing
+
+---
+
+## 🎯 Executive Summary
+
+AIFS (AI File System Accelerator) solves a critical inefficiency in AI training:
+
+> **Checkpointing stalls that cause expensive GPUs to sit idle**
+
+By accelerating checkpoint writes, AIFS:
+
+- Reduces checkpoint latency  
+- Improves GPU utilization  
+- Shortens training time  
+- Delivers measurable cost savings  
+
+👉 **Live Calculator:**  
+https://aifs-calculator.vercel.app
+
+---
+
+## ⚡ The Problem
+
+### Checkpointing slows down AI training
+
+Typical AI workloads:
+
+- Checkpoints: **10–100+ GiB**
+- Frequency: **every 5–60 minutes**
+- Blocking writes during training
+
+### Result
+
+- ❌ GPUs idle while waiting for storage  
+- ❌ Training jobs run longer  
+- ❌ Cloud costs increase  
+
+---
+
+## 💡 The Insight
+
+> **This is not a storage problem — it’s a GPU efficiency problem**
+
+Even small checkpoint delays lead to:
+
+- Hours of lost GPU compute per run  
+- Thousands of dollars/month wasted  
+
+---
+
+## ✅ The Solution: AIFS
+
+AIFS sits between the application and storage:
+
+### What it does
+
+- Absorbs checkpoint writes at **NVMe speed**  
+- Returns immediately to the application  
+- Flushes data asynchronously to backend storage  
+
+---
+
+### Outcome
+
+✅ Faster checkpoint completion  
+✅ Reduced GPU idle time  
+✅ Faster training cycles  
+✅ Lower infrastructure cost  
+
+---
+
+## 📊 Demo / Sales Tool
+
+👉 https://aifs-calculator.vercel.app  
+
+### During a call:
+
+Ask:
+- checkpoint size  
+- checkpoint frequency  
+- GPU node cost  
+
+Show:
+- GPU hours saved  
+- cost reduction  
+- recommended pricing  
+
+---
+
+## 💰 Market Opportunity (Checkpoint-Focused)
+
+### AI Infrastructure Context
+- AI infrastructure spend is **$90B–$140B+ today and growing rapidly**
+- Hyperscalers invest **hundreds of billions annually in AI compute**
+
+---
+
+### Checkpointing Segment
+- ~$1–3B today  
+- Growing to **$7–12B by ~2033**
+
+---
+
