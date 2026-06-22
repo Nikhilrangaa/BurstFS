@@ -16,7 +16,7 @@ These results show how AIFS uses local NVMe as a fast write-back layer to reduce
 
 This chart compares the measured write throughput across the direct NVMe path and the AIFS paths.
 
-![AIFS Checkpoint Write Performance](./aifs_chart_1_throughput.png)
+![AIFS Checkpoint Write Performance](./Chart.js-preview.png)
 
 ### Key takeaway
 - **NVMe Direct** shows the maximum local-device throughput.
