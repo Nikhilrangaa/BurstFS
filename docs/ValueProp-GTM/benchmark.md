@@ -31,7 +31,7 @@ This chart compares the measured write throughput across the direct NVMe path an
 
 This chart models checkpoint stall time as checkpoint size increases, using the measured throughput results above.
 
-![Checkpoint Stall Time Reduction](./aifs_chart_2_stall_time.png)
+![Checkpoint Stall Time Reduction](./checkpointstall.png)
 
 ### Key takeaway
 - As checkpoint size increases, the gap between the **durable path** and the **AIFS async path** becomes more significant.
@@ -45,7 +45,7 @@ This chart models checkpoint stall time as checkpoint size increases, using the 
 
 This chart translates the time savings into an illustrative GPU cost savings model for a large H100 cluster.
 
-![Avoided Idle GPU Cost per Checkpoint](./aifs_chart_3_idle_cost.png)
+![Avoided Idle GPU Cost per Checkpoint](./avoididlegpu.png)
 
 ### Key takeaway
 - Even modest checkpoint-time reductions become economically meaningful at scale.
