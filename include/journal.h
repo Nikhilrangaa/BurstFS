@@ -17,6 +17,7 @@ void journal_mark_local_durable(const char *path, size_t size);
 void journal_mark_replicating(const char *path);
 void journal_mark_remote_durable(const char *path);
 void journal_mark_failed(const char *path);
+int journal_all_remote_durable_under_root(const char *root_path);
 ckpt_state_t journal_get_state(const char *path);
 
 #endif
