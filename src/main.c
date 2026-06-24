@@ -28,18 +28,26 @@ static int ensure_dir_exists(const char *path) {
     return 0;
 }
 
+static int build_orphan_spool_path(const char *spool_root, pid_t pid, char *out, size_t out_sz) {
+    int n;
+    n = snprintf(out, out_sz, "%s.orphan.%ld", spool_root, (long)pid);
+    if (n < 0 || (size_t)n >= out_sz) {
+        errno = ENAMETOOLONG;
+        return -1;
+    }
+    return 0;
+}
+
 /*
  * Conservative crash-recovery rule:
  * - Never trust leftover NVMe/spool data after a process/VM crash.
  * - Quarantine the spool root on startup so only lower_root (persistent store)
  *   determines the restart-visible checkpoint set.
- *
- * This intentionally favors correctness over recovering the newest in-flight
- * checkpoint from local NVMe.
  */
 static int quarantine_spool_root(void) {
     struct stat st;
     char quarantine[PATH_MAX];
+
     if (lstat(g_cfg.spool_root, &st) != 0) {
         if (errno == ENOENT) {
             return ensure_dir_exists(g_cfg.spool_root);
@@ -50,7 +58,9 @@ static int quarantine_spool_root(void) {
         errno = ENOTDIR;
         return -1;
     }
-    snprintf(quarantine, sizeof(quarantine), "%s.orphan.%ld", g_cfg.spool_root, (long)getpid());
+    if (build_orphan_spool_path(g_cfg.spool_root, getpid(), quarantine, sizeof(quarantine)) != 0) {
+        return -1;
+    }
     if (rename(g_cfg.spool_root, quarantine) != 0) {
         return -1;
     }
@@ -100,3 +110,4 @@ int main(int argc, char **argv) {
     fuse_opt_free_args(&args);
     return ret;
 }
+

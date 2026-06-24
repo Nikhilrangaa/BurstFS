@@ -20,12 +20,7 @@ typedef struct {
     char path[MAX_PATH_LEN];
 } repl_job_t;
 
-/* local forward declarations for helpers defined in journal.c */
 extern int journal_all_remote_durable_under_root(const char *root_path);
-
-typedef struct {
-    char path[MAX_PATH_LEN];
-} repl_job_t;
 
 static repl_job_t g_queue[MAX_QUEUE];
 static int g_head = 0, g_tail = 0;
@@ -37,31 +32,61 @@ static pthread_t g_thread;
 static int queue_empty(void) {
     return g_head == g_tail;
 }
+
 static int queue_full(void) {
     return ((g_tail + 1) % MAX_QUEUE) == g_head;
 }
 
-static void checkpoint_root_for_path(const char *path, char *out, size_t out_sz) {
-    const char *slash2;
-    if (!path || path[0] != '/') {
-        snprintf(out, out_sz, "/");
-        return;
-    }
-    slash2 = strchr(path + 1, '/');
-    if (!slash2) {
-        snprintf(out, out_sz, "%s", path);
-        return;
-    }
-    snprintf(out, out_sz, "%.*s", (int)(slash2 - path), path);
-}
-
-static int remove_path_if_exists(const char *path) {
-    struct stat st;
-    if (lstat(path, &st) != 0) {
-        if (errno == ENOENT) return 0;
+static int build_tmp_file_path(const char *dst, char *tmpdst, size_t tmpdst_sz) {
+    int n = snprintf(tmpdst, tmpdst_sz, "%s.tmp", dst);
+    if (n < 0 || (size_t)n >= tmpdst_sz) {
+        errno = ENAMETOOLONG;
         return -1;
     }
-    if (unlink(path) != 0) return -1;
+    return 0;
+}
+
+static int build_commit_marker_path(const char *lower_root, char *marker, size_t marker_sz) {
+    int n = snprintf(marker, marker_sz, "%s/%s", lower_root, COMMIT_MARKER);
+    if (n < 0 || (size_t)n >= marker_sz) {
+        errno = ENAMETOOLONG;
+        return -1;
+    }
+    return 0;
+}
+
+static int checkpoint_root_for_path(const char *path, char *out, size_t out_sz) {
+    const char *slash2;
+    size_t len;
+
+    if (!path || path[0] != '/') {
+        if (out_sz > 0) {
+            out[0] = '/';
+            if (out_sz > 1) out[1] = '\0';
+        }
+        return 0;
+    }
+
+    slash2 = strchr(path + 1, '/');
+    if (!slash2) {
+        len = strlen(path);
+        if (len + 1 > out_sz) {
+            errno = ENAMETOOLONG;
+            if (out_sz) out[0] = '\0';
+            return -1;
+        }
+        memcpy(out, path, len + 1);
+        return 0;
+    }
+
+    len = (size_t)(slash2 - path);
+    if (len + 1 > out_sz) {
+        errno = ENAMETOOLONG;
+        if (out_sz) out[0] = '\0';
+        return -1;
+    }
+    memcpy(out, path, len);
+    out[len] = '\0';
     return 0;
 }
 
@@ -69,14 +94,17 @@ static int fsync_parent_dir(const char *path) {
     char tmp[PATH_MAX];
     char *slash;
     int fd;
+
     snprintf(tmp, sizeof(tmp), "%s", path);
     slash = strrchr(tmp, '/');
     if (!slash) return 0;
+
     if (slash == tmp) {
         slash[1] = '\0';
     } else {
         *slash = '\0';
     }
+
     fd = open(tmp, O_RDONLY | O_DIRECTORY);
     if (fd < 0) return -1;
     if (fsync(fd) != 0) {
@@ -89,7 +117,7 @@ static int fsync_parent_dir(const char *path) {
 
 static int copy_file_atomic(const char *src, const char *dst) {
     char tmpdst[PATH_MAX];
-    snprintf(tmpdst, sizeof(tmpdst), "%s.tmp", dst);
+    if (build_tmp_file_path(dst, tmpdst, sizeof(tmpdst)) != 0) return -1;
     if (ensure_parent_dir(tmpdst) != 0) return -1;
     if (copy_file(src, tmpdst) != 0) {
         unlink(tmpdst);
@@ -109,12 +137,14 @@ static int write_commit_marker_for_root(const char *root_path) {
     char lower_root[PATH_MAX];
     char marker[PATH_MAX];
     int fd;
+
     make_lower_path(root_path, lower_root, sizeof(lower_root));
-    if (ensure_parent_dir(lower_root) != 0) return -1;
     if (mkdir_p(lower_root) != 0) return -1;
-    snprintf(marker, sizeof(marker), "%s/%s", lower_root, COMMIT_MARKER);
+    if (build_commit_marker_path(lower_root, marker, sizeof(marker)) != 0) return -1;
+
     fd = open(marker, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (fd < 0) return -1;
+
     if (write(fd, "committed\n", 10) < 0) {
         close(fd);
         return -1;
@@ -124,19 +154,25 @@ static int write_commit_marker_for_root(const char *root_path) {
         return -1;
     }
     close(fd);
+
     if (fsync_parent_dir(marker) != 0) return -1;
     return 0;
 }
 
 static void maybe_commit_checkpoint_root(const char *file_path) {
     char root[MAX_PATH_LEN];
-    checkpoint_root_for_path(file_path, root, sizeof(root));
+
+    if (checkpoint_root_for_path(file_path, root, sizeof(root)) != 0) {
+        return;
+    }
     if (strcmp(root, "/") == 0) {
         return;
     }
+
     if (journal_all_remote_durable_under_root(root)) {
         if (write_commit_marker_for_root(root) != 0) {
-            fprintf(stderr, "failed to write commit marker for root %s: %s\n", root, strerror(errno));
+            fprintf(stderr, "failed to write commit marker for root %s: %s\n",
+                    root, strerror(errno));
         }
     }
 }
@@ -147,6 +183,7 @@ static void *repl_worker(void *arg) {
         repl_job_t job;
         char src[PATH_MAX];
         char dst[PATH_MAX];
+
         pthread_mutex_lock(&g_lock);
         while (queue_empty() && g_running) {
             pthread_cond_wait(&g_cv, &g_lock);
@@ -199,3 +236,4 @@ int replicator_enqueue(const char *virtual_path) {
     pthread_mutex_unlock(&g_lock);
     return 0;
 }
+

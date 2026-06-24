@@ -17,6 +17,15 @@
 
 #define COMMIT_MARKER ".aifs_committed"
 
+static int build_commit_marker_path(const char *lower_root, char *marker, size_t marker_sz) {
+    int n = snprintf(marker, marker_sz, "%s/%s", lower_root, COMMIT_MARKER);
+    if (n < 0 || (size_t)n >= marker_sz) {
+        errno = ENAMETOOLONG;
+        return -1;
+    }
+    return 0;
+}
+
 static void checkpoint_root_for_path(const char *path, char *out, size_t out_sz) {
     const char *slash2;
     if (!path || path[0] != '/') {
@@ -25,10 +34,22 @@ static void checkpoint_root_for_path(const char *path, char *out, size_t out_sz)
     }
     slash2 = strchr(path + 1, '/');
     if (!slash2) {
-        snprintf(out, out_sz, "%s", path);
+        size_t len = strlen(path);
+        if (len + 1 > out_sz) {
+            errno = ENAMETOOLONG;
+            if (out_sz) out[0] = '\0';
+            return;
+        }
+        memcpy(out, path, len + 1);
         return;
     }
-    snprintf(out, out_sz, "%.*s", (int)(slash2 - path), path);
+    if ((size_t)(slash2 - path) + 1 > out_sz) {
+        errno = ENAMETOOLONG;
+        if (out_sz) out[0] = '\0';
+        return;
+    }
+    memcpy(out, path, (size_t)(slash2 - path));
+    out[slash2 - path] = '\0';
 }
 
 static void remove_commit_marker_for_path(const char *path) {
@@ -38,8 +59,10 @@ static void remove_commit_marker_for_path(const char *path) {
     checkpoint_root_for_path(path, root, sizeof(root));
     if (strcmp(root, "/") == 0) return;
     make_lower_path(root, lower_root, sizeof(lower_root));
-    snprintf(marker, sizeof(marker), "%s/%s", lower_root, COMMIT_MARKER);
-    unlink(marker); /* best effort: making checkpoint dirty */
+    if (build_commit_marker_path(lower_root, marker, sizeof(marker)) != 0) {
+        return;
+    }
+    unlink(marker);
 }
 
 static int is_commit_marker_name(const char *path) {
@@ -92,7 +115,7 @@ static int ckptfs_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
         struct stat st;
         memset(&st, 0, sizeof(st));
         if (strcmp(de->d_name, COMMIT_MARKER) == 0)
-            continue; /* do not expose internal marker */
+            continue;
         st.st_ino = de->d_ino;
         st.st_mode = de->d_type << 12;
         filler(buf, de->d_name, &st, 0, 0);
@@ -170,16 +193,6 @@ static int ckptfs_write(const char *path, const char *buf, size_t size, off_t of
     return (int)res;
 }
 
-/*
- * Flush local spool contents to stable local media, mark journal durable,
- * and enqueue replication to backend.
- *
- * IMPORTANT:
- * - This does NOT wait for backend replication to finish.
- * - Backend durability is represented separately by the internal
- *   .aifs_committed marker created by the replicator after all files under a
- *   checkpoint root become REMOTE_DURABLE.
- */
 static int ckptfs_flush_local_and_enqueue(const char *path, struct fuse_file_info *fi)
 {
     struct stat st;
@@ -244,3 +257,4 @@ struct fuse_operations ckptfs_ops = {
     .fsync   = ckptfs_fsync,
     .release = ckptfs_release,
 };
+
