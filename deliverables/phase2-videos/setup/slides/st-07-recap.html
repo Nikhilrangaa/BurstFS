@@ -1,0 +1,18 @@
+<meta charset="utf-8">
+<link rel="stylesheet" href="_style.css">
+<div class="kicker">Recap</div>
+<h2>The whole setup, in one breath.</h2>
+<div class="fill" style="flex-direction:column;align-items:stretch;justify-content:center;gap:40px;">
+  <div class="panel" style="padding:48px 56px;font-family:ui-monospace,monospace;font-size:32px;line-height:1.9;color:var(--ink-2);">
+    sudo apt-get install -y build-essential fuse3 libfuse3-dev pkg-config<br>
+    git clone https://github.com/Nikhilrangaa/AI-Accelerator.git &amp;&amp; cd AI-Accelerator &amp;&amp; make<br>
+    sudo mkdir -p /mnt/aifs /tmp/aifs-backend /mnt/nvme/aifs-cache&nbsp; <span style="color:var(--muted);">(+ chown)</span><br>
+    <span style="color:var(--blue);">./ckptfs /mnt/aifs /tmp/aifs-backend /mnt/nvme/aifs-cache</span>
+  </div>
+  <div style="display:flex;justify-content:space-between;font-size:32px;color:var(--ink-2);">
+    <span>📄 &nbsp;INSTALL.md &amp; TROUBLESHOOTING.md — in <code>deliverables/phase2-videos/setup/</code></span>
+    <span>💰 &nbsp;aifs-calculator.vercel.app</span>
+  </div>
+  <div style="font-size:42px;font-weight:700;text-align:center;">Try it on your own training pipeline.</div>
+</div>
+<div class="footer"><span>AIFS · ckptfs — open-source prototype</span><span>github.com/Nikhilrangaa/AI-Accelerator</span></div>

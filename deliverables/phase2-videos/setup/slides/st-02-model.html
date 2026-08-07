@@ -1,0 +1,23 @@
+<meta charset="utf-8">
+<link rel="stylesheet" href="_style.css">
+<div class="kicker">The mental model</div>
+<h2>One binary. Three directories.</h2>
+<div class="fill" style="flex-direction:column;align-items:stretch;justify-content:center;gap:36px;">
+  <div class="panel" style="padding:36px 48px;font-family:ui-monospace,monospace;font-size:36px;color:var(--ink);">./ckptfs&nbsp; <span style="color:var(--blue);">/mnt/aifs</span>&nbsp; <span style="color:var(--orange,#d95926);">/tmp/aifs-backend</span>&nbsp; <span style="color:var(--good);">/mnt/nvme/aifs-cache</span></div>
+  <div style="display:flex;gap:36px;">
+    <div class="panel" style="flex:1;padding:40px;border-top:4px solid var(--blue);">
+      <div style="font-size:30px;font-weight:700;margin-bottom:12px;">Mountpoint</div>
+      <div style="font-size:28px;color:var(--ink-2);line-height:1.4;">The <b>virtual</b> filesystem your apps use. Nothing is stored here.</div>
+    </div>
+    <div class="panel" style="flex:1;padding:40px;border-top:4px solid #d95926;">
+      <div style="font-size:30px;font-weight:700;margin-bottom:12px;">Lower — durable backend</div>
+      <div style="font-size:28px;color:var(--ink-2);line-height:1.4;">NFS / ANF in production. <b>Source of truth</b> after a crash.</div>
+    </div>
+    <div class="panel" style="flex:1;padding:40px;border-top:4px solid var(--good);">
+      <div style="font-size:30px;font-weight:700;margin-bottom:12px;">Spool — local NVMe</div>
+      <div style="font-size:28px;color:var(--ink-2);line-height:1.4;">Every new write lands here <b>first</b>, at NVMe speed.</div>
+    </div>
+  </div>
+  <div style="font-size:30px;color:var(--muted);text-align:center;">write → spool (instant ack) → background replication → lower → <code>.aifs_committed</code></div>
+</div>
+<div class="footer"><span>Reads resolve spool-first, then fall back to the backend</span><span></span></div>

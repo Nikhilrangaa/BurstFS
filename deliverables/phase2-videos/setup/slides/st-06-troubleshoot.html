@@ -1,0 +1,23 @@
+<meta charset="utf-8">
+<link rel="stylesheet" href="_style.css">
+<div class="kicker">Troubleshooting</div>
+<h2>The four things you'll actually hit.</h2>
+<div class="fill" style="flex-direction:column;align-items:stretch;justify-content:center;gap:28px;">
+  <div class="panel" style="padding:32px 44px;display:flex;gap:28px;align-items:baseline;">
+    <span style="font-size:30px;font-weight:700;color:var(--blue);white-space:nowrap;">Stale mount after a crash</span>
+    <span style="font-size:28px;color:var(--ink-2);">→&nbsp; <code style="font-size:26px;">fusermount3 -u /mnt/aifs</code> before relaunching</span>
+  </div>
+  <div class="panel" style="padding:32px 44px;display:flex;gap:28px;align-items:baseline;">
+    <span style="font-size:30px;font-weight:700;color:var(--blue);white-space:nowrap;">Empty <code style="font-size:28px;">ls</code> after restart</span>
+    <span style="font-size:28px;color:var(--ink-2);">→&nbsp; known limitation — data is safe; read checkpoints from the backend path</span>
+  </div>
+  <div class="panel" style="padding:32px 44px;display:flex;gap:28px;align-items:baseline;">
+    <span style="font-size:30px;font-weight:700;color:var(--blue);white-space:nowrap;">No commit marker</span>
+    <span style="font-size:28px;color:var(--ink-2);">→&nbsp; each checkpoint needs its <b>own directory</b> — no loose files at the mount root</span>
+  </div>
+  <div class="panel" style="padding:32px 44px;display:flex;gap:28px;align-items:baseline;">
+    <span style="font-size:30px;font-weight:700;color:var(--blue);white-space:nowrap;">NVMe filling up</span>
+    <span style="font-size:28px;color:var(--ink-2);">→&nbsp; delete old <code style="font-size:26px;">*.orphan.*</code> quarantine dirs; no auto-eviction yet</span>
+  </div>
+</div>
+<div class="footer"><span>Full list with fixes: deliverables/phase2-videos/setup/TROUBLESHOOTING.md</span><span></span></div>

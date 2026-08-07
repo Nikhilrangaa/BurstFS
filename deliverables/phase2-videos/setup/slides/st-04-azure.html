@@ -1,0 +1,19 @@
+<meta charset="utf-8">
+<link rel="stylesheet" href="_style.css">
+<div class="kicker">On real hardware — Azure L8as_v3 transcript (see README)</div>
+<h2>Provision the NVMe data disk first.</h2>
+<div class="fill" style="flex-direction:column;align-items:stretch;justify-content:center;gap:32px;">
+  <div class="panel" style="padding:40px 48px;">
+    <div style="font-family:ui-monospace,monospace;font-size:30px;color:var(--ink-2);line-height:1.7;">
+      lsblk <span style="color:var(--muted);"># find the DATA disk — e.g. nvme1n1, not the OS disk</span><br>
+      sudo fdisk /dev/nvme1n1 <span style="color:var(--muted);"># n → p → 1 → defaults → w</span><br>
+      sudo mkfs.ext4 /dev/nvme1n1p1<br>
+      sudo mkdir -p /mnt/nvme &amp;&amp; sudo mount /dev/nvme1n1p1 /mnt/nvme
+    </div>
+  </div>
+  <div class="panel" style="padding:36px 48px;border-color:rgba(208,59,59,0.5);display:flex;gap:24px;align-items:center;">
+    <span style="font-size:44px;color:var(--critical);">⚠</span>
+    <div style="font-size:30px;color:var(--ink-2);line-height:1.4;"><b style="color:var(--ink);">setup/aifs-setup.sh force-formats the first NVMe device it finds — no confirmation.</b><br>On many VMs that's the OS disk. Check the device name before running it.</div>
+  </div>
+</div>
+<div class="footer"><span>Full fdisk/mkfs/mount transcript in the top-level README</span><span></span></div>

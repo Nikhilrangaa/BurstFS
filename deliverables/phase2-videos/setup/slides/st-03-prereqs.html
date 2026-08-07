@@ -1,0 +1,18 @@
+<meta charset="utf-8">
+<link rel="stylesheet" href="_style.css">
+<div class="kicker">Prerequisites</div>
+<h2>A Linux box and four packages.</h2>
+<div class="fill" style="flex-direction:column;align-items:stretch;justify-content:center;gap:36px;">
+  <div style="display:flex;gap:36px;">
+    <div class="panel" style="flex:1;padding:44px;">
+      <div style="font-size:30px;font-weight:700;margin-bottom:16px;">OS</div>
+      <div style="font-size:30px;color:var(--ink-2);line-height:1.5;">Ubuntu 22.04 / 24.04<br>or WSL2 on Windows<br><span style="color:var(--muted);">(macOS not supported — FUSE3/Linux only)</span></div>
+    </div>
+    <div class="panel" style="flex:2;padding:44px;">
+      <div style="font-size:30px;font-weight:700;margin-bottom:16px;">Packages</div>
+      <div style="font-family:ui-monospace,monospace;font-size:30px;color:var(--ink-2);line-height:1.6;">sudo apt-get update<br>sudo apt-get install -y <span style="color:var(--blue);">build-essential fuse3<br>&nbsp;&nbsp;libfuse3-dev pkg-config</span></div>
+    </div>
+  </div>
+  <div style="font-size:30px;color:var(--muted);text-align:center;">…plus sudo access, and a local NVMe disk if you want real performance</div>
+</div>
+<div class="footer"><span>Verify: gcc --version · pkg-config --modversion fuse3</span><span></span></div>
