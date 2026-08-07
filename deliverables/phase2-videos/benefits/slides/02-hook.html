@@ -1,0 +1,19 @@
+<meta charset="utf-8">
+<link rel="stylesheet" href="_style.css">
+<div class="kicker">While a checkpoint writes, GPUs do nothing</div>
+<h2>Idle GPUs are burned money.</h2>
+<div class="fill" style="gap:40px;align-items:stretch;">
+  <div class="panel" style="flex:1;padding:56px;display:flex;flex-direction:column;justify-content:center;">
+    <div style="font-size:96px;font-weight:700;">10–100<span style="font-size:56px;color:var(--ink-2);">+ GiB</span></div>
+    <div style="font-size:32px;color:var(--ink-2);margin-top:16px;">per checkpoint — model weights + optimizer state</div>
+  </div>
+  <div class="panel" style="flex:1;padding:56px;display:flex;flex-direction:column;justify-content:center;">
+    <div style="font-size:96px;font-weight:700;">5–60<span style="font-size:56px;color:var(--ink-2);"> min</span></div>
+    <div style="font-size:32px;color:var(--ink-2);margin-top:16px;">between saves, for the whole training run</div>
+  </div>
+  <div class="panel" style="flex:1;padding:56px;display:flex;flex-direction:column;justify-content:center;border-color:rgba(208,59,59,0.45);">
+    <div style="font-size:96px;font-weight:700;color:var(--critical);">~$5</div>
+    <div style="font-size:32px;color:var(--ink-2);margin-top:16px;">idle GPU burned per large checkpoint, per event <span style="color:var(--muted);">(H100 @ $2.49–2.69/hr)</span></div>
+  </div>
+</div>
+<div class="footer"><span>× every checkpoint · every node · every day</span><span>Sources: Lambda / RunPod H100 rates</span></div>

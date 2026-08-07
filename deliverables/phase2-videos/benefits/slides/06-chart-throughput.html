@@ -1,0 +1,35 @@
+<meta charset="utf-8">
+<link rel="stylesheet" href="_style.css">
+<div class="kicker">Measured — Azure L8as_v3, 4 GiB checkpoint, dd + fsync</div>
+<h2>879 MB/s on the <em>fully durable</em> path.</h2>
+<div class="fill">
+  <svg width="1680" height="640" viewBox="0 0 1680 640">
+    <!-- grid -->
+    <g stroke="#2c2c2a" stroke-width="1">
+      <line x1="140" y1="20"  x2="1640" y2="20"/><line x1="140" y1="155" x2="1640" y2="155"/>
+      <line x1="140" y1="290" x2="1640" y2="290"/><line x1="140" y1="425" x2="1640" y2="425"/>
+    </g>
+    <line x1="140" y1="560" x2="1640" y2="560" stroke="#383835" stroke-width="1.5"/>
+    <g fill="#898781" font-size="24" font-family="system-ui" text-anchor="end">
+      <text x="126" y="568">0</text><text x="126" y="433">800</text><text x="126" y="298">1,600</text>
+      <text x="126" y="163">2,400</text><text x="126" y="28">3,200 MB/s</text>
+    </g>
+    <!-- bars: one measure, one hue; 4px rounded data-end, anchored baseline -->
+    <path d="M 290 24 h 192 a4 4 0 0 1 4 4 v 532 h -200 v -532 a4 4 0 0 1 4 -4 z" fill="#3987e5"/>
+    <path d="M 740 319 h 192 a4 4 0 0 1 4 4 v 237 h -200 v -237 a4 4 0 0 1 4 -4 z" fill="#3987e5"/>
+    <path d="M 1190 410.2 h 192 a4 4 0 0 1 4 4 v 145.8 h -200 v -145.8 a4 4 0 0 1 4 -4 z" fill="#3987e5"/>
+    <!-- direct value labels -->
+    <g fill="#ffffff" font-size="34" font-weight="700" font-family="system-ui" text-anchor="middle">
+      <text x="386" y="0" transform="translate(0,64)">3,200</text>
+      <text x="836" y="0" transform="translate(0,359)">1,400</text>
+      <text x="1286" y="0" transform="translate(0,450)">879</text>
+    </g>
+    <!-- category labels -->
+    <g fill="#c3c2b7" font-size="28" font-family="system-ui" text-anchor="middle">
+      <text x="386" y="606">Raw NVMe <tspan fill="#898781">(hardware ceiling)</tspan></text>
+      <text x="836" y="606">AIFS — async path</text>
+      <text x="1286" y="606">AIFS — durable path <tspan fill="#898781">(fsync)</tspan></text>
+    </g>
+  </svg>
+</div>
+<div class="footer"><span>4 GiB locally safe in 4.9 s — replication finishes ~30–40 s later, off the critical path</span><span>README dd transcript · benchmark.md</span></div>

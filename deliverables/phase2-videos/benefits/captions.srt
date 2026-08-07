@@ -1,0 +1,212 @@
+1
+00:00:00,700 --> 00:00:03,343
+Every large AI training run has a hidden tax.
+
+2
+00:00:03,343 --> 00:00:07,221
+This video is about what it costs you — and how to stop paying it.
+
+3
+00:00:08,699 --> 00:00:13,416
+Every twenty to thirty minutes, a training job stops to save a checkpoint
+
+4
+00:00:13,416 --> 00:00:16,129
+— the model's weights and optimizer state.
+
+5
+00:00:16,129 --> 00:00:19,037
+While that file writes, your GPUs do nothing.
+
+6
+00:00:19,037 --> 00:00:24,658
+At H100 rates, a single large checkpoint can burn around five dollars of idle GPU time.
+
+7
+00:00:24,658 --> 00:00:28,340
+Multiply that by every checkpoint, every node, every day.
+
+8
+00:00:29,699 --> 00:00:30,980
+Here's why it happens.
+
+9
+00:00:30,980 --> 00:00:34,066
+Checkpoints are big — ten to a hundred-plus gibibytes
+
+10
+00:00:34,066 --> 00:00:38,723
+— and they're written to durable shared storage, like NFS or Azure NetApp Files.
+
+11
+00:00:38,723 --> 00:00:42,566
+Durable storage is the right place for them — it survives crashes.
+
+12
+00:00:42,566 --> 00:00:46,699
+But it's slow, and the write sits on the training loop's critical path.
+
+13
+00:00:46,699 --> 00:00:49,494
+The bigger the checkpoint, the longer the stall.
+
+14
+00:00:49,494 --> 00:00:51,589
+At a hundred twenty-eight gigabytes,
+
+15
+00:00:51,589 --> 00:00:56,422
+the durable path can hold your GPUs for two and a half minutes — every single time.
+
+16
+00:00:57,900 --> 00:01:00,165
+AIFS — the AI File System Accelerator
+
+17
+00:01:00,165 --> 00:01:04,145
+— fixes this with one idea: decouple performance from durability.
+
+18
+00:01:04,145 --> 00:01:05,798
+AIFS is a filesystem layer.
+
+19
+00:01:05,798 --> 00:01:09,778
+Your training job writes to a normal directory — no code changes.
+
+20
+00:01:09,778 --> 00:01:15,228
+Behind the mount, writes land on fast local NVMe first, and training resumes immediately.
+
+21
+00:01:15,228 --> 00:01:19,330
+In the background, AIFS replicates the data to your durable storage
+
+22
+00:01:19,330 --> 00:01:21,412
+— which stays the source of truth.
+
+23
+00:01:21,412 --> 00:01:24,657
+When every file in a checkpoint is safely replicated,
+
+24
+00:01:24,657 --> 00:01:29,127
+AIFS writes a commit marker: this checkpoint is complete and trustworthy.
+
+25
+00:01:30,500 --> 00:01:32,293
+Let's watch it actually work.
+
+26
+00:01:32,293 --> 00:01:36,622
+This is the real prototype — open source, written in C — running live.
+
+27
+00:01:36,622 --> 00:01:38,724
+On the left, the local NVMe spool.
+
+28
+00:01:38,724 --> 00:01:40,827
+On the right, the durable backend.
+
+29
+00:01:40,827 --> 00:01:45,527
+We save a multi-file training checkpoint: model, optimizer, scheduler state.
+
+30
+00:01:45,527 --> 00:01:48,557
+Watch the left side — the files appear instantly.
+
+31
+00:01:48,557 --> 00:01:50,907
+The training job is already unblocked.
+
+32
+00:01:50,907 --> 00:01:54,309
+Now watch the right — the same files arrive one by one,
+
+33
+00:01:54,309 --> 00:01:57,153
+as the background replicator copies them over.
+
+34
+00:01:57,153 --> 00:02:02,719
+And last of all, the commit marker — dot aifs committed — appears, sealing the checkpoint.
+
+35
+00:02:02,719 --> 00:02:06,739
+If the node crashed mid-copy, that marker would never be written,
+
+36
+00:02:06,739 --> 00:02:11,191
+and training would simply resume from the previous committed checkpoint.
+
+37
+00:02:11,191 --> 00:02:12,985
+Durability, without the wait.
+
+38
+00:02:14,500 --> 00:02:16,755
+On real Azure hardware with local NVMe,
+
+39
+00:02:16,755 --> 00:02:21,554
+the prototype sustains eight hundred seventy-nine megabytes per second on the fully
+
+40
+00:02:21,554 --> 00:02:22,305
+durable path.
+
+41
+00:02:22,305 --> 00:02:26,006
+A four-gibibyte checkpoint is locally safe in under five seconds
+
+42
+00:02:26,006 --> 00:02:30,516
+— with replication finishing off the critical path, about half a minute later.
+
+43
+00:02:31,900 --> 00:02:34,383
+That speed converts directly into money.
+
+44
+00:02:34,383 --> 00:02:39,164
+Seconds saved per checkpoint, times checkpoints per day, times GPUs per node,
+
+45
+00:02:39,164 --> 00:02:41,151
+times what you pay per GPU hour.
+
+46
+00:02:41,151 --> 00:02:43,386
+At a hundred twenty-eight gigabytes,
+
+47
+00:02:43,386 --> 00:02:46,988
+that's roughly five dollars of avoided idle per checkpoint
+
+48
+00:02:46,988 --> 00:02:49,533
+— before you multiply across the cluster.
+
+49
+00:02:50,900 --> 00:02:56,155
+If you run training jobs that checkpoint frequently, operate GPU infrastructure,
+
+50
+00:02:56,155 --> 00:03:00,622
+or sell GPU capacity — AIFS turns storage speed into GPU efficiency.
+
+51
+00:03:00,622 --> 00:03:05,877
+Try the pricing calculator to estimate your own savings, and find the prototype,
+
+52
+00:03:05,877 --> 00:03:08,504
+the specs, and the benchmarks on GitHub.
+
+53
+00:03:08,504 --> 00:03:10,541
+Stop paying the checkpoint tax.
+

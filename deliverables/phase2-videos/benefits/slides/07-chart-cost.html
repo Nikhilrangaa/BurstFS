@@ -1,0 +1,50 @@
+<meta charset="utf-8">
+<link rel="stylesheet" href="_style.css">
+<div class="kicker">Speed → money</div>
+<h2>Avoided idle-GPU cost, per checkpoint.</h2>
+<div class="fill" style="flex-direction:column;align-items:stretch;">
+  <div style="display:flex;justify-content:flex-end;gap:40px;font-size:26px;color:var(--ink-2);margin-bottom:8px;">
+    <span><span style="display:inline-block;width:18px;height:18px;border-radius:4px;background:#3987e5;margin-right:10px;vertical-align:-2px;"></span>Lambda — $2.49 / H100-hr</span>
+    <span><span style="display:inline-block;width:18px;height:18px;border-radius:4px;background:#d95926;margin-right:10px;vertical-align:-2px;"></span>RunPod — $2.69 / H100-hr</span>
+  </div>
+  <svg width="1680" height="600" viewBox="0 0 1680 600">
+    <g stroke="#2c2c2a" stroke-width="1">
+      <line x1="140" y1="20"  x2="1640" y2="20"/><line x1="140" y1="145" x2="1640" y2="145"/>
+      <line x1="140" y1="270" x2="1640" y2="270"/><line x1="140" y1="395" x2="1640" y2="395"/>
+    </g>
+    <line x1="140" y1="520" x2="1640" y2="520" stroke="#383835" stroke-width="1.5"/>
+    <g fill="#898781" font-size="24" font-family="system-ui" text-anchor="end">
+      <text x="126" y="528">$0</text><text x="126" y="403">$1.50</text><text x="126" y="278">$3.00</text>
+      <text x="126" y="153">$4.50</text><text x="126" y="28">$6.00</text>
+    </g>
+    <!-- grouped bars: 2 series, 2px surface gap between pair -->
+    <g fill="#3987e5">
+      <path d="M 188 511.5 h 72 a4 4 0 0 1 4 4 v 4.5 h -80 v -4.5 a4 4 0 0 1 4 -4 z" transform="translate(0,-4)"/>
+      <path d="M 438 495 h 72 a4 4 0 0 1 4 4 v 21 h -80 v -21 a4 4 0 0 1 4 -4 z" transform="translate(0,-4)"/>
+      <path d="M 688 470 h 72 a4 4 0 0 1 4 4 v 46 h -80 v -46 a4 4 0 0 1 4 -4 z" transform="translate(0,-4)"/>
+      <path d="M 938 420 h 72 a4 4 0 0 1 4 4 v 96 h -80 v -96 a4 4 0 0 1 4 -4 z" transform="translate(0,-4)"/>
+      <path d="M 1188 320 h 72 a4 4 0 0 1 4 4 v 196 h -80 v -196 a4 4 0 0 1 4 -4 z" transform="translate(0,-4)"/>
+      <path d="M 1438 120 h 72 a4 4 0 0 1 4 4 v 396 h -80 v -396 a4 4 0 0 1 4 -4 z" transform="translate(0,-4)"/>
+    </g>
+    <g fill="#d95926">
+      <path d="M 270 510.7 h 72 a4 4 0 0 1 4 4 v 5.3 h -80 v -5.3 a4 4 0 0 1 4 -4 z" transform="translate(0,-4)"/>
+      <path d="M 520 492.5 h 72 a4 4 0 0 1 4 4 v 23.5 h -80 v -23.5 a4 4 0 0 1 4 -4 z" transform="translate(0,-4)"/>
+      <path d="M 770 465.8 h 72 a4 4 0 0 1 4 4 v 50.2 h -80 v -50.2 a4 4 0 0 1 4 -4 z" transform="translate(0,-4)"/>
+      <path d="M 1020 411.7 h 72 a4 4 0 0 1 4 4 v 104.3 h -80 v -104.3 a4 4 0 0 1 4 -4 z" transform="translate(0,-4)"/>
+      <path d="M 1270 303.3 h 72 a4 4 0 0 1 4 4 v 212.7 h -80 v -212.7 a4 4 0 0 1 4 -4 z" transform="translate(0,-4)"/>
+      <path d="M 1520 86.7 h 72 a4 4 0 0 1 4 4 v 429.3 h -80 v -429.3 a4 4 0 0 1 4 -4 z" transform="translate(0,-4)"/>
+    </g>
+    <!-- direct labels, last group only -->
+    <g font-size="30" font-weight="700" font-family="system-ui" text-anchor="middle" fill="#ffffff">
+      <text x="1478" y="102">$4.80</text>
+      <text x="1560" y="70">$5.20</text>
+    </g>
+    <!-- category labels -->
+    <g fill="#c3c2b7" font-size="28" font-family="system-ui" text-anchor="middle">
+      <text x="265" y="566">4 GB</text><text x="515" y="566">8 GB</text><text x="765" y="566">16 GB</text>
+      <text x="1015" y="566">32 GB</text><text x="1265" y="566">64 GB</text><text x="1515" y="566">128 GB</text>
+    </g>
+  </svg>
+  <div style="font-size:30px;color:var(--muted);text-align:center;margin-top:12px;">seconds saved × checkpoints per day × GPUs per node × $/GPU-hour — then multiply across the cluster</div>
+</div>
+<div class="footer"><span>Modeled per single H100 GPU-rate, per checkpoint event</span><span>docs/ValueProp-GTM/avoididlegpu data</span></div>

@@ -1,0 +1,43 @@
+<meta charset="utf-8">
+<link rel="stylesheet" href="_style.css">
+<div class="kicker">Why it happens</div>
+<h2>The checkpoint write sits on the training loop's critical path.</h2>
+<div class="fill" style="gap:64px;align-items:stretch;">
+  <div style="flex:1.05;display:flex;flex-direction:column;justify-content:center;gap:28px;">
+    <div class="panel" style="padding:36px 44px;font-size:38px;font-weight:600;">Training GPUs <span style="color:var(--muted);font-weight:400;">— step, step, step…</span></div>
+    <div style="font-size:40px;color:var(--muted);padding-left:44px;">↓ &nbsp;write checkpoint (10–100+ GiB)</div>
+    <div class="panel" style="padding:36px 44px;font-size:38px;font-weight:600;">Durable shared storage <span style="color:var(--muted);font-weight:400;">— NFS / ANF</span></div>
+    <div class="panel" style="padding:32px 44px;border-color:rgba(208,59,59,0.45);display:flex;align-items:center;gap:20px;">
+      <span style="font-size:36px;color:var(--critical);">⏸</span>
+      <span style="font-size:34px;color:var(--ink-2);">Durable — but slow. <b style="color:var(--ink);">GPUs sit idle until the write completes.</b></span>
+    </div>
+  </div>
+  <div class="panel" style="flex:1;padding:44px 52px;display:flex;flex-direction:column;">
+    <div style="font-size:30px;font-weight:600;margin-bottom:8px;">Stall time grows with checkpoint size</div>
+    <div style="font-size:24px;color:var(--muted);margin-bottom:24px;">Durable-path write on the critical path · seconds</div>
+    <svg width="700" height="540" viewBox="0 0 700 540" style="flex:1;">
+      <!-- grid -->
+      <g stroke="#2c2c2a" stroke-width="1">
+        <line x1="70" y1="20"  x2="670" y2="20"/><line x1="70" y1="135" x2="670" y2="135"/>
+        <line x1="70" y1="250" x2="670" y2="250"/><line x1="70" y1="365" x2="670" y2="365"/>
+      </g>
+      <!-- axes -->
+      <line x1="70" y1="480" x2="670" y2="480" stroke="#383835" stroke-width="1.5"/>
+      <!-- y labels -->
+      <g fill="#898781" font-size="22" font-family="system-ui" text-anchor="end">
+        <text x="58" y="488">0</text><text x="58" y="373">40</text><text x="58" y="258">80</text>
+        <text x="58" y="143">120</text><text x="58" y="28">160 s</text>
+      </g>
+      <!-- x labels -->
+      <g fill="#898781" font-size="22" font-family="system-ui" text-anchor="middle">
+        <text x="70" y="516">0</text><text x="220" y="516">32</text><text x="370" y="516">64</text>
+        <text x="520" y="516">96</text><text x="670" y="516">128 GB</text>
+      </g>
+      <!-- series: durable path stall -->
+      <polyline points="70,480 145,425 220,374 370,264 670,49" fill="none" stroke="#3987e5" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+      <circle cx="670" cy="49" r="6" fill="#3987e5" stroke="#1a1a19" stroke-width="2"/>
+      <text x="655" y="88" fill="#ffffff" font-size="26" font-weight="600" font-family="system-ui" text-anchor="end">~150 s stall @ 128 GB</text>
+    </svg>
+  </div>
+</div>
+<div class="footer"><span>Modeled from measured throughput — docs/ValueProp-GTM/benchmark.md</span><span>≈ 2.5 GPU-minutes lost, every save</span></div>
