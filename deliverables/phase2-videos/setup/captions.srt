@@ -1,276 +1,196 @@
 1
-00:00:00,700 --> 00:00:03,885
-In this video we'll set up the AIFS prototype — ckptfs
+00:00:00,700 --> 00:00:10,756
+In this video, we'll set up the AIFS prototype — ckptfs — going from a clean Ubuntu machine to a working, accelerated checkpoint mount.
 
 2
-00:00:03,885 --> 00:00:08,190
-— from a clean Ubuntu machine to a working, accelerated checkpoint mount.
+00:00:11,306 --> 00:00:20,498
+By the end, you'll have built the filesystem from source, mounted it, written a real checkpoint through it, and watched it replicate to durable storage.
 
 3
-00:00:08,190 --> 00:00:12,201
-By the end you'll have built the filesystem from source, mounted it,
+00:00:20,998 --> 00:00:23,854
+Plus — what to do when something goes wrong.
 
 4
-00:00:12,201 --> 00:00:16,979
-written a real checkpoint through it, and watched it replicate to durable storage
+00:00:25,500 --> 00:00:28,428
+Before we install anything — the mental model.
 
 5
-00:00:16,979 --> 00:00:19,574
-— plus what to do when something goes wrong.
-
-6
-00:00:23,699 --> 00:00:26,465
-Before installing anything, the mental model.
-
-7
-00:00:26,465 --> 00:00:28,370
+00:00:29,028 --> 00:00:32,004
 ckptfs takes three directories.
 
+6
+00:00:32,504 --> 00:00:38,288
+The mountpoint is the virtual filesystem your applications see. Nothing is actually stored there.
+
+7
+00:00:38,838 --> 00:00:44,478
+The spool is fast, local NVMe — every new write lands there first.
+
 8
-00:00:28,370 --> 00:00:32,180
-The mountpoint is the virtual filesystem your applications see
+00:00:45,028 --> 00:00:53,860
+And the lower directory is your durable storage — an NFS share, in production — which remains the source of truth after a crash.
 
 9
-00:00:32,180 --> 00:00:34,331
-— nothing is actually stored there.
+00:00:54,460 --> 00:00:58,060
+One binary, three paths. That's the whole system.
 
 10
-00:00:34,331 --> 00:00:38,325
-The spool is fast local NVMe — every new write lands there first.
+00:00:59,700 --> 00:01:07,524
+You'll need a Linux machine — Ubuntu 22.04 or later, or WSL2 on Windows — with sudo access.
 
 11
-00:00:38,325 --> 00:00:42,996
-And the lower directory is your durable storage — an NFS share in production
+00:01:08,024 --> 00:01:17,528
+The toolchain is just four packages: build-essential for the C compiler, fuse3, the libfuse3 development headers, and pkg-config.
 
 12
-00:00:42,996 --> 00:00:46,069
-— which remains the source of truth after a crash.
+00:01:19,200 --> 00:01:23,184
+We start with apt-get update, then install the four packages.
 
 13
-00:00:46,069 --> 00:00:49,141
-One binary, three paths — that's the whole system.
+00:01:23,684 --> 00:01:26,684
+On a fresh machine, this takes a minute or two.
 
 14
-00:00:53,700 --> 00:00:59,138
-You'll need a Linux machine — Ubuntu 22.04 or later, or WSL2 on Windows
+00:01:27,134 --> 00:01:34,838
+When it finishes, verify that GCC is available — version 13 here, on Ubuntu 24.04.
 
 15
-00:00:59,138 --> 00:01:00,594
-— with sudo access.
+00:01:36,500 --> 00:01:41,636
+Next, clone the repository from GitHub, change into it, and run make.
 
 16
-00:01:00,594 --> 00:01:06,262
-The toolchain is four packages: build-essential for the C compiler, fuse3,
+00:01:42,136 --> 00:01:48,232
+The build takes a few seconds — and produces a single, small binary: ckptfs.
 
 17
-00:01:06,262 --> 00:01:10,016
-the libfuse3 development headers, and pkg-config.
+00:01:49,900 --> 00:01:57,940
+Now create the three directories — the mountpoint, the durable backend, and the NVMe spool — and take ownership of them.
 
 18
-00:01:12,700 --> 00:01:16,762
-Start with apt-get update, then install the four packages.
+00:01:58,490 --> 00:02:02,762
+Then launch ckptfs with the three paths, in that order.
 
 19
-00:01:16,762 --> 00:01:19,984
-On a fresh machine this takes a minute or two.
+00:02:03,262 --> 00:02:08,758
+It runs in the foreground — so keep this terminal open, and do your work in a second one.
 
 20
-00:01:19,984 --> 00:01:25,798
-When it finishes, verify GCC is available — version thirteen here, on Ubuntu 24.04.
+00:02:10,400 --> 00:02:13,736
+From that second terminal, confirm the mount is live.
 
 21
-00:01:29,500 --> 00:01:33,844
-Clone the repository from GitHub, change into it, and run make.
+00:02:14,236 --> 00:02:21,364
+Then write a test file through it with dd. Notice the speed — that write landed on the local spool immediately.
 
 22
-00:01:33,844 --> 00:01:38,878
-The build takes a few seconds and produces a single small binary: ckptfs.
+00:02:21,914 --> 00:02:29,258
+Moments later, the same file appears in the durable backend — together with a hidden marker: .aifs_committed.
 
 23
-00:01:42,099 --> 00:01:47,387
-Create the three directories — the mountpoint, the durable backend, and the NVMe spool
-
-24
-00:01:47,387 --> 00:01:49,232
-— then take ownership of them.
-
-25
-00:01:49,232 --> 00:01:52,306
-Launch ckptfs with the three paths, in that order.
-
-26
-00:01:52,306 --> 00:01:57,655
-It runs in the foreground, so keep this terminal open and do your work in a second one.
-
-27
-00:02:00,399 --> 00:02:03,239
-From a second terminal, confirm the mount is live.
-
-28
-00:02:03,239 --> 00:02:05,567
-Then write a test file through it with dd
-
-29
-00:02:05,567 --> 00:02:10,508
-— note the gigabyte-per-second speed: that write landed on the local spool immediately.
-
-30
-00:02:10,508 --> 00:02:13,915
-Moments later, the same file appears in the durable backend,
-
-31
-00:02:13,915 --> 00:02:16,755
-together with a hidden marker: dot aifs committed.
-
-32
-00:02:16,755 --> 00:02:20,730
+00:02:29,758 --> 00:02:34,150
 That marker means the whole checkpoint directory is safely replicated.
 
-33
-00:02:23,899 --> 00:02:25,252
-Now the real workflow.
+24
+00:02:35,800 --> 00:02:37,768
+Now — the real workflow.
 
-34
-00:02:25,252 --> 00:02:30,233
-We save a multi-file training checkpoint — model, optimizer, scheduler, RNG state
+25
+00:02:38,318 --> 00:02:48,926
+We save a multi-file training checkpoint — model, optimizer, scheduler, RNG state — while refreshing both directory listings five times a second.
 
-35
-00:02:30,233 --> 00:02:34,107
-— while refreshing both directory listings five times a second.
+26
+00:02:49,526 --> 00:02:54,590
+The spool on the left fills instantly. A training job would already be unblocked.
 
-36
-00:02:34,107 --> 00:02:39,149
-The spool on the left fills instantly — a training job would already be unblocked.
+27
+00:02:55,240 --> 00:03:04,048
+On the right, the background replicator copies each file over, in order — and the commit marker arrives last, sealing the checkpoint.
 
-37
-00:02:39,149 --> 00:02:43,514
-On the right, the background replicator copies each file over in order,
+28
+00:03:04,648 --> 00:03:11,272
+On real hardware with an NFS backend, that right-hand column trails by thirty to forty seconds.
 
-38
-00:02:43,514 --> 00:02:47,142
-and the commit marker arrives last, sealing the checkpoint.
+29
+00:03:11,772 --> 00:03:14,052
+And the GPUs never wait for it.
 
-39
-00:02:47,142 --> 00:02:49,417
-On real hardware with an NFS backend,
+30
+00:03:15,700 --> 00:03:17,476
+So — what about crashes?
 
-40
-00:02:49,417 --> 00:02:54,951
-that right-hand column trails by thirty to forty seconds — and the GPUs never wait for it.
+31
+00:03:17,976 --> 00:03:21,648
+We kill ckptfs mid-flight, and restart it.
 
-41
-00:03:03,899 --> 00:03:05,067
-What about crashes?
-
-42
-00:03:05,067 --> 00:03:07,462
-Kill ckptfs mid-flight, and restart it.
-
-43
-00:03:07,462 --> 00:03:11,823
+32
+00:03:22,198 --> 00:03:27,238
 On startup, the old spool is quarantined — never trusted after a crash.
 
-44
-00:03:11,823 --> 00:03:15,447
-The durable backend still holds every committed checkpoint.
+33
+00:03:27,738 --> 00:03:31,626
+But the durable backend still holds every committed checkpoint.
 
-45
-00:03:15,447 --> 00:03:20,852
-The recovery rule is simple: resume training from the newest checkpoint that carries the
+34
+00:03:32,126 --> 00:03:38,702
+The recovery rule is simple: resume training from the newest checkpoint that carries the commit marker.
 
-46
-00:03:20,852 --> 00:03:21,712
-commit marker.
+35
+00:03:40,300 --> 00:03:45,628
+One note — this demo ran in a container, so both tiers shared a single disk.
 
-47
-00:03:24,899 --> 00:03:28,783
-This demo ran in a container, so both tiers shared one disk.
+36
+00:03:46,128 --> 00:03:55,344
+On a real cloud VM, you'd first provision the local NVMe disk: partition it with fdisk, format it ext4, and mount it.
 
-48
-00:03:28,783 --> 00:03:34,284
-On a real cloud VM, you first provision the local NVMe disk: partition it with fdisk,
+37
+00:03:55,844 --> 00:04:01,652
+The full transcript is in the README, recorded on an Azure L8as_v3.
 
-49
-00:03:34,284 --> 00:03:38,944
-format it e x t 4, and mount it — the full transcript is in the read-me,
+38
+00:04:02,202 --> 00:04:12,306
+One warning before you use the bundled setup script: it force-formats the first NVMe device it finds — and on many VMs, that's the OS disk.
 
-50
-00:03:38,944 --> 00:03:40,951
-recorded on an Azure L8 a s v3.
-
-51
-00:03:40,951 --> 00:03:46,388
-One warning before you use the bundled setup script: it force-formats the first NVMe
-
-52
-00:03:46,388 --> 00:03:49,753
-device it finds, and on many VMs that's the OS disk.
-
-53
-00:03:49,753 --> 00:03:52,019
+39
+00:04:12,806 --> 00:04:15,110
 Always check the device name first.
 
-54
-00:03:54,899 --> 00:03:56,777
-Set up this way on real hardware,
+40
+00:04:16,800 --> 00:04:25,416
+Set up this way on real hardware, the prototype sustained 879 megabytes per second, on the fully durable path.
 
-55
-00:03:56,777 --> 00:04:01,557
-the prototype sustained eight hundred seventy-nine megabytes per second on the fully
+41
+00:04:25,916 --> 00:04:35,660
+That's a four-gibibyte checkpoint, locally safe in under five seconds — with replication completing off the critical path, about half a minute later.
 
-56
-00:04:01,557 --> 00:04:05,939
-durable path — a four-gibibyte checkpoint locally safe in under five seconds,
+42
+00:04:37,300 --> 00:04:40,228
+Finally — the issues you're most likely to hit.
 
-57
-00:04:05,939 --> 00:04:10,320
-with replication completing off the critical path, about half a minute later.
+43
+00:04:40,778 --> 00:04:47,330
+If the mount is dead after a crash, unmount it with fusermount3 -u before relaunching.
 
-58
-00:04:12,999 --> 00:04:15,107
-The issues you're most likely to hit.
+44
+00:04:47,830 --> 00:04:56,134
+If ls on the mount shows nothing after a restart — that's a known prototype limitation. Your data is still safe, in the backend.
 
-59
-00:04:15,107 --> 00:04:20,062
-If the mount is dead after a crash, unmount with fusermount3 dash u before relaunching.
+45
+00:04:56,684 --> 00:05:03,236
+Write checkpoints into their own directories — never loose files at the mount root — or commit markers won't work.
 
-60
-00:04:20,062 --> 00:04:24,903
-If ls on the mount shows nothing after a restart, that's a known prototype limitation
+46
+00:05:03,736 --> 00:05:09,832
+And clean up quarantined orphan spool directories from time to time. They're never deleted automatically.
 
-61
-00:04:24,903 --> 00:04:27,238
-— your data is still safe in the backend.
+47
+00:05:11,500 --> 00:05:17,428
+And that's the whole setup. Four packages, one make, three directories, one command.
 
-62
-00:04:27,238 --> 00:04:31,908
-Write checkpoints into their own directories — never loose files at the mount root
+48
+00:05:18,028 --> 00:05:23,644
+The full install guide and troubleshooting notes live in the repository, under deliverables.
 
-63
-00:04:31,908 --> 00:04:33,673
-— or commit markers won't work.
-
-64
-00:04:33,673 --> 00:04:38,344
-And clean up quarantined orphan spool directories from time to time; they're never
-
-65
-00:04:38,344 --> 00:04:39,597
-deleted automatically.
-
-66
-00:04:42,499 --> 00:04:47,585
-And that's the whole setup: four packages, one make, three directories, one command.
-
-67
-00:04:47,585 --> 00:04:51,944
-The full install guide and troubleshooting notes live in the repository,
-
-68
-00:04:51,944 --> 00:04:53,095
-under deliverables.
-
-69
-00:04:53,095 --> 00:04:57,878
+49
+00:05:24,144 --> 00:05:28,704
 Try it against your own training pipeline — and stop paying the checkpoint tax.
 
